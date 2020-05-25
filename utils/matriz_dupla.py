@@ -35,17 +35,17 @@ class MatrizDupla:
     def coluna(self):
         return self._principal.coluna
 
-    def set(self, matriz, linha, coluna, valor) -> bool:
+    def set(self, linha: int, coluna: int, valor, matriz='principal') -> bool:
         if not(0 <= linha < self.linha and 0 <= coluna < self.coluna):
             return False
-        if matriz == 0 or matriz == 'principal':
+        if matriz == 'principal':
             self._principal.set(linha, coluna, valor)
         else:
             self._secundaria.set(linha, coluna, valor)
         return True
 
-    def get(self, matriz, linha, coluna):
-        if matriz == 0 or matriz == 'principal':
+    def get(self, linha: int, coluna: int, matriz='principal'):
+        if matriz == 'principal':
             return self._principal.get(linha, coluna)
         return self._secundaria.get(linha, coluna)
 

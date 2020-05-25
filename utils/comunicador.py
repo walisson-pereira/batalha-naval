@@ -17,7 +17,7 @@ class Comunicador:
             s.listen()
             conn, addr = s.accept()
             with conn:
-                print('Conectado por ', addr)
+                #print('Conectado por ', addr)
                 while True:
                     data = conn.recv(1024)
                     if not data:

@@ -1,9 +1,24 @@
 from batalha import BatalhaNaval
+import os
 
-b = BatalhaNaval(player=1)
+print('Jogo de Batalha Naval')
+player = int(input('Este é o jogador 1 ou 2? '))
+b = BatalhaNaval(player=player)
 
-b.adicione_um_navio(0,0,3,False)
+print('Vamos adicionar seus navios')
+b.adicione_navios()
 
-b.ataque_inimigo(2,0)
-print(b)
+input('Aperte enter para continuar')
 
+while True:
+    os.system('clear')
+    if player != 1:
+        b.receba_ataque()
+    print('Mapa atual')
+    print(b)
+    print('Hora do ataque:')
+    linha = int(input('Digite a linha (0 - 9): '))
+    coluna = int(input('Digite a coluna (0 - 9): '))
+    b.ataque_inimigo(linha, coluna)
+    if player == 1:
+        b.receba_ataque()

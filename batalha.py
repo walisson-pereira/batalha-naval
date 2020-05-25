@@ -1,6 +1,6 @@
 from utils.matriz_dupla import MatrizDupla
 from utils.comunicador import Comunicador
-
+import os
 
 
 class BatalhaNaval:
@@ -8,7 +8,6 @@ class BatalhaNaval:
     BOMBA_ERRO = '*'
     BOMBA_ACERTO = '@'
     NAVIO = 'O'
-    BOMBA_RECEBIDA = '*'
     PORT_PLAYER_1 = 65432
     PORT_PLAYER_2 = 65433
 
@@ -26,14 +25,14 @@ class BatalhaNaval:
         try:
             if horizontal:
                 linha_inicio = linha
-                linha_fim = linha + tamanho
-                coluna_inicio = coluna
-                coluna_fim = coluna + 1
-            else:
-                linha_inicio = linha
                 linha_fim = linha + 1
                 coluna_inicio = coluna
                 coluna_fim = coluna + tamanho
+            else:
+                linha_inicio = linha
+                linha_fim = linha + tamanho
+                coluna_inicio = coluna
+                coluna_fim = coluna + 1
 
             # verificar se está dentro da faixa aceitável
             if not (0 <= linha_inicio < self._oceano.linha and
@@ -44,7 +43,7 @@ class BatalhaNaval:
 
             for lin in range(linha_inicio, linha_fim):
                 for col in range(coluna_inicio, coluna_fim):
-                    self._oceano.set('principal', lin, col, BatalhaNaval.NAVIO)
+                    self._oceano.set(lin, col, BatalhaNaval.NAVIO)
 
         except IndexError:
             return False
@@ -55,10 +54,10 @@ class BatalhaNaval:
         total = len(quantidades)
         while cont < total:
             tamanho = quantidades[cont]
-            print('Adicionando navio {}/{}'.format(cont, total))
-            linha = int(input('Qual a linha (0-{:2})? '.format(self._oceano.linha - 1)))
-            coluna = int(input('Qual a coluna (0-{:2}? '.format(self._oceano.coluna - 1)))
-            orientacao = input('Vertical ou Horizontal (v|h)?')
+            print('Adicionando navio {}/{}'.format((cont+1), total))
+            linha = int(input('Qual a linha (0 - {:2})? '.format(self._oceano.linha - 1)))
+            coluna = int(input('Qual a coluna (0 - {:2}? '.format(self._oceano.coluna - 1)))
+            orientacao = input('Vertical ou Horizontal (v|h)? ')
             horizontal = True
             if orientacao == 'v' or orientacao == 'V':
                 horizontal = False
@@ -66,51 +65,59 @@ class BatalhaNaval:
             if not deu_certo:
                 return False
             cont += 1
+            os.system('clear')
+            print('Mapa atual')
+            print(self)
         return True
 
     def ataque_inimigo(self, linha, coluna) -> bool:
+        print('Enviando ataque')
         mensagem = 'ATAQUE {} {}'.format(linha, coluna)
         if self.player == 1:
             Comunicador.envie_mensagem(mensagem, port=BatalhaNaval.PORT_PLAYER_2)
-            resposta = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_2)
+            resposta = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_1)
         else:
             Comunicador.envie_mensagem(mensagem, port=BatalhaNaval.PORT_PLAYER_1)
             resposta = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_2)
 
+        print('Mensagem enviada: {}'.format(mensagem))
+        print('Resposta recebida: {}'.format(resposta))
+
         if resposta == 'ACERTO':
             self.registra_acerto(linha, coluna)
-        else:
+        if resposta == 'ERRO':
             self.registra_erro(linha, coluna)
-
-        if self.player == 1:
-            resposta = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_2)
-        else:
-            resposta = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_1)
-        print('Recebido a mensagem:\n')
-        print(resposta)
         if resposta == 'FIM':
-            print('Fim do jogo! Você ganhou!')
+            print('Fim de jogo! Você ganhou!')
             exit()
+
         return True
 
     def receba_ataque(self) -> bool:
+        print('Aguardando ataque')
         if self.player == 1:
             mensagem = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_1)
         else:
             mensagem = Comunicador.receba_mensagem(port=BatalhaNaval.PORT_PLAYER_2)
-        print('mensagem recebida:\n')
-        print(mensagem)
+
+        print('Mensagem recebida: {}'.format(mensagem))
+
         if mensagem.split()[0] == 'ATAQUE':
-            print('Recebi um ataque')
             linha = int(mensagem.split()[1])
             coluna = int(mensagem.split()[2])
+            acerto = self._oceano.get(linha, coluna) == BatalhaNaval.NAVIO
             self.registra_bomba_recebida(linha, coluna)
             perdeu = self.fim_de_jogo()
             if perdeu:
                 mensagem = 'FIM'
                 print('Fim de jogo! Você perdeu!')
+                exit()
+            elif acerto:
+                mensagem = 'ACERTO'
             else:
-                mensagem = 'NÃO'
+                mensagem = 'ERRO'
+
+            print('Mensagem enviada: {}'.format(mensagem))
 
             if self.player == 1:
                 Comunicador.envie_mensagem(mensagem, port=BatalhaNaval.PORT_PLAYER_2)
@@ -118,11 +125,14 @@ class BatalhaNaval:
                 Comunicador.envie_mensagem(mensagem, port=BatalhaNaval.PORT_PLAYER_1)
         return True
 
-    def registra_acerto (self, linha: int, coluna: int):
-        self._oceano.set('secundario', linha, coluna, BatalhaNaval.BOMBA_ACERTO)
+    def registra_acerto(self, linha: int, coluna: int):
+        self._oceano.set(linha, coluna, BatalhaNaval.BOMBA_ACERTO, matriz='secundario')
 
     def registra_erro(self, linha: int, coluna: int):
-        self._oceano.set('secundario', linha, coluna, BatalhaNaval.BOMBA_ERRO)
+        self._oceano.set(linha, coluna, BatalhaNaval.BOMBA_ERRO, matriz='secundario')
 
-    def registra_bomba_recebida (self, linha: int, coluna: int):
-        self._oceano.set('principal', linha, coluna, BatalhaNaval.BOMBA_RECEBIDA)
+    def registra_bomba_recebida(self, linha: int, coluna: int):
+        if self._oceano.get(linha, coluna) == BatalhaNaval.NAVIO:
+            self._oceano.set(linha, coluna, BatalhaNaval.BOMBA_ACERTO)
+        else:
+            self._oceano.set(linha, coluna, BatalhaNaval.BOMBA_ERRO)
