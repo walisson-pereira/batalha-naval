@@ -3,7 +3,7 @@ from utils.matriz import Matriz
 
 class MatrizDupla:
 
-    def __init__(self, linha: int, coluna: int, valor_padrao=0):
+    def __init__(self, linha=10, coluna=10, valor_padrao=0):
         self._principal = Matriz(linha, coluna, valor_padrao)
         self._secundaria = Matriz(linha, coluna, valor_padrao)
 
@@ -35,13 +35,22 @@ class MatrizDupla:
     def coluna(self):
         return self._principal.coluna
 
-    def set(self, matriz, linha, coluna, valor) -> None:
+    def set(self, matriz, linha, coluna, valor) -> bool:
+        if not(0 <= linha < self.linha and 0 <= coluna < self.coluna):
+            return False
         if matriz == 0 or matriz == 'principal':
             self._principal.set(linha, coluna, valor)
         else:
             self._secundaria.set(linha, coluna, valor)
+        return True
 
     def get(self, matriz, linha, coluna):
         if matriz == 0 or matriz == 'principal':
             return self._principal.get(linha, coluna)
         return self._secundaria.get(linha, coluna)
+
+    def tem_no_principal(self, elemento):
+        return self._principal.tem(elemento)
+
+    def tem_no_secundario(self, elemento):
+        return self._secundaria.tem(elemento)

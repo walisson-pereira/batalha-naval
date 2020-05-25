@@ -1,6 +1,6 @@
 class Matriz:
 
-    def __init__(self, linha: int, coluna: int = 0, valor_padrao=0):
+    def __init__(self, linha=10, coluna=0, valor_padrao=0):
         if coluna == 0:
             coluna = linha
 
@@ -36,3 +36,10 @@ class Matriz:
 
     def get(self, linha: int, coluna: int):
         return self._matriz[linha][coluna]
+
+    def tem(self, elemento) -> bool:
+        for lin in range(self.linha):
+            for col in range(self.coluna):
+                if self._matriz[lin][col] == elemento:
+                    return True
+        return False

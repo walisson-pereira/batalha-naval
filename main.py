@@ -1,5 +1,9 @@
-from utils.matriz_dupla import MatrizDupla
+from batalha import BatalhaNaval
 
-m = MatrizDupla(25, 25, '~')
-m.titulo('Minha área', 'Área inimiga')
-print(m)
+b = BatalhaNaval(player=1)
+
+b.adicione_um_navio(0,0,3,False)
+
+b.ataque_inimigo(2,0)
+print(b)
+

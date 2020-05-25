@@ -6,10 +6,10 @@ class Comunicador:
     PORT = 65432
 
     @staticmethod
-    def receba_mensagem(host='', port='') -> str:
+    def receba_mensagem(host='', port=0) -> str:
         if host == '':
             host = Comunicador.HOST
-        if port == '':
+        if port == 0:
             port = Comunicador.PORT
         mensagem = ''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -23,14 +23,18 @@ class Comunicador:
                     if not data:
                         break
                     mensagem = repr(data)
-        return str(mensagem)
+        return Comunicador.formata_mensagem(str(mensagem))
 
     @staticmethod
-    def envie_mensagem(mensagem:str, host='', port='') -> None:
+    def envie_mensagem(mensagem:str, host='', port=0) -> None:
         if host == '':
             host = Comunicador.HOST
-        if port == '':
+        if port == 0:
             port = Comunicador.PORT
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
             s.sendall(bytes(mensagem, encoding='utf8'))
+
+    @staticmethod
+    def formata_mensagem(mensagem: str) -> str:
+        return mensagem.split('\'')[1]
