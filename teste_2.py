@@ -12,4 +12,4 @@ b.receba_ataque()
 #input('aperte qualquer coisa')
 print(b)
 
-
+#fim
